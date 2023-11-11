@@ -7,6 +7,7 @@ import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -66,6 +67,20 @@ public class WorldGuardEvents {
         container = WorldGuard.getInstance().getPlatform().getRegionContainer();
     }
 
+    @Nonnull
+    public static Set<ProtectedRegion> getRegions(Location location)
+    {
+        RegionQuery query = container.createQuery();
+        ApplicableRegionSet set = query.getApplicableRegions(BukkitAdapter.adapt(location));
+        return set.getRegions();
+    }
+
+    @Nonnull
+    public static Set<String> getRegionsNames(Location location)
+    {
+        return getRegions(location).stream().map(ProtectedRegion::getId).collect(Collectors.toSet());
+    }
+
     /**
      * Gets the regions a player is currently in.
      *
@@ -79,9 +94,7 @@ public class WorldGuardEvents {
         if (player == null || !player.isOnline())
             return Collections.emptySet();
         
-        RegionQuery query = container.createQuery();
-        ApplicableRegionSet set = query.getApplicableRegions(BukkitAdapter.adapt(player.getLocation()));
-        return set.getRegions();
+        return getRegions(player.getLocation());
     }
     
     /**
