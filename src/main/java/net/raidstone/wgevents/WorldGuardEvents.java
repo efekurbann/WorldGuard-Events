@@ -8,7 +8,6 @@ import com.sk89q.worldguard.protection.regions.RegionContainer;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,56 +24,48 @@ import java.util.stream.Collectors;
  * @author Weby &amp; Anrza (info@raidstone.net)
  * @since 2/24/19
  */
-public class WorldGuardEvents extends JavaPlugin implements Listener {
+public class WorldGuardEvents {
+
+    private final JavaPlugin plugin;
+
     static RegionContainer container;
-    
+
+    public WorldGuardEvents(JavaPlugin plugin) {
+        this.plugin = plugin;
+    }
+
     //    Listeners listeners = null;
-    public void onEnable() {
-        Logger log = Bukkit.getLogger();
+    public void init() {
+        Logger log = plugin.getLogger();
         PluginManager pm = Bukkit.getPluginManager();
         Plugin p = Bukkit.getPluginManager().getPlugin("WorldGuard");
         
         if (p == null) {
-            log.severe("[WorldGuardEvents] WorldGuard wasn't found. Disabling WorldGuardEvents.");
-            pm.disablePlugin(this);
+            log.severe("WorldGuard wasn't found. Disabling...");
+            pm.disablePlugin(plugin);
             return;
         }
         
         String version = WorldGuard.getVersion();
-        
-        if (version.isEmpty()) {
-            log.severe("[WorldGuardEvents] WorldGuard's version not detected. Are you sure it's installed properly ?");
-            log.severe("[WorldGuardEvents] Disabling WorldGuardEvents.");
-    
-            pm.disablePlugin(this);
-            return;
-        }
-        
+
         if (!version.startsWith("7.")) {
-            log.warning("[WorldGuardEvents] Detected WorldGuard version \"" + version + "\".");
-            log.warning("[WorldGuardEvents] This plugin is meant to work with WorldGuard version \"7.0.0\" or higher,");
-            log.warning("[WorldGuardEvents] and may not work properly with any other major revision.");
-            log.warning("[WorldGuardEvents] Please update WorldGuard if your version is below \"7.0.0\" or wait for");
-            log.warning("[WorldGuardEvents] an update of WorldGuardEvents to support WorldGuard "+version+".");
+            log.warning("Detected WorldGuard version \"" + version + "\".");
+            log.warning("This plugin is meant to work with WorldGuard version \"7.0.0\" or higher,");
+            log.warning("and may not work properly with any other major revision.");
+            log.warning("Please update WorldGuard if your version is below \"7.0.0\"");
         }
         
         if (!WorldGuard.getInstance().getPlatform().getSessionManager().registerHandler(Entry.factory, null)) {
-            log.severe("[WorldGuardEvents] Could not register the entry handler !");
-            log.severe("[WorldGuardEvents] Please report this error. The plugin will now be disabled.");
+            log.severe("Could not register the entry handler !");
+            log.severe("Please report this error. The plugin will now be disabled.");
     
-            pm.disablePlugin(this);
+            pm.disablePlugin(plugin);
             return;
         }
         
         container = WorldGuard.getInstance().getPlatform().getRegionContainer();
     }
-    
-    @Override
-    public void onDisable()
-    {
-        container = null;
-    }
-    
+
     /**
      * Gets the regions a player is currently in.
      *
